@@ -378,14 +378,16 @@ func NewServer(options ...Option) (*Server, error) {
 
 	// Step 8: Initialize products.
 	// Depends on s.httpService.
-	for name, initializer := range products {
-		prod, err2 := initializer(s, serviceMap)
-		if err2 != nil {
-			return nil, errors.Wrapf(err2, "error initializing product: %s", name)
-		}
-
-		s.products[name] = prod
+	err = s.initializeProducts(products, serviceMap, dependencies)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to initialize products")
 	}
+
+	p, ok := s.products["channels"]
+	if !ok || p == nil {
+		return nil, errors.New("channels is not registered")
+	}
+	ch := p.(*Channels)
 
 	// It is important to initialize the hub only after the global logger is set
 	// to avoid race conditions while logging from inside the hub.
@@ -486,12 +488,12 @@ func NewServer(options ...Option) (*Server, error) {
 	}
 
 	s.configListenerId = s.AddConfigListener(func(_, _ *model.Config) {
-		ch := s.Channels()
-		ch.regenerateClientConfig()
+		channels := s.Channels()
+		channels.regenerateClientConfig()
 
 		message := model.NewWebSocketEvent(model.WebsocketEventConfigChanged, "", "", "", nil)
 
-		appInstance := New(ServerConnector(ch))
+		appInstance := New(ServerConnector(channels))
 		message.Add("config", appInstance.ClientConfigWithComputed())
 		s.Go(func() {
 			s.Publish(message)
@@ -503,7 +505,7 @@ func NewServer(options ...Option) (*Server, error) {
 		}
 	})
 	s.licenseListenerId = s.AddLicenseListener(func(oldLicense, newLicense *model.License) {
-		s.Channels().regenerateClientConfig()
+		ch.regenerateClientConfig()
 
 		message := model.NewWebSocketEvent(model.WebsocketEventLicenseChanged, "", "", "", nil)
 		message.Add("license", s.GetSanitizedClientLicense())
@@ -513,7 +515,7 @@ func NewServer(options ...Option) (*Server, error) {
 
 	})
 
-	s.telemetryService = telemetry.New(New(ServerConnector(s.Channels())), s.Store, s.SearchEngine, s.Log)
+	s.telemetryService = telemetry.New(New(ServerConnector(ch)), s.Store, s.SearchEngine, s.Log)
 
 	emailService, err := email.NewService(email.ServiceConfig{
 		ConfigFn:           s.Config,
@@ -623,7 +625,7 @@ func NewServer(options ...Option) (*Server, error) {
 	// if enabled - perform initial product notices fetch
 	if *s.Config().AnnouncementSettings.AdminNoticesEnabled || *s.Config().AnnouncementSettings.UserNoticesEnabled {
 		go func() {
-			appInstance := New(ServerConnector(s.Channels()))
+			appInstance := New(ServerConnector(ch))
 			if err := appInstance.UpdateProductNotices(); err != nil {
 				mlog.Warn("Failied to perform initial product notices fetch", mlog.Err(err))
 			}
@@ -635,7 +637,7 @@ func NewServer(options ...Option) (*Server, error) {
 	}
 
 	s.AddConfigListener(func(old, new *model.Config) {
-		appInstance := New(ServerConnector(s.Channels()))
+		appInstance := New(ServerConnector(ch))
 		if *old.GuestAccountsSettings.Enable && !*new.GuestAccountsSettings.Enable {
 			if appErr := appInstance.DeactivateGuests(request.EmptyContext()); appErr != nil {
 				mlog.Error("Unable to deactivate guest accounts", mlog.Err(appErr))
@@ -645,7 +647,7 @@ func NewServer(options ...Option) (*Server, error) {
 
 	// Disable active guest accounts on first run if guest accounts are disabled
 	if !*s.Config().GuestAccountsSettings.Enable {
-		appInstance := New(ServerConnector(s.Channels()))
+		appInstance := New(ServerConnector(ch))
 		if appErr := appInstance.DeactivateGuests(request.EmptyContext()); appErr != nil {
 			mlog.Error("Unable to deactivate guest accounts", mlog.Err(appErr))
 		}
@@ -653,7 +655,7 @@ func NewServer(options ...Option) (*Server, error) {
 
 	if s.runEssentialJobs {
 		s.Go(func() {
-			appInstance := New(ServerConnector(s.Channels()))
+			appInstance := New(ServerConnector(ch))
 			s.runLicenseExpirationCheckJob()
 			s.runInactivityCheckJob()
 			runDNDStatusExpireJob(appInstance)
