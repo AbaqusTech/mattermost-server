@@ -852,7 +852,7 @@ func (a *App) HandleCommandWebhook(c *request.Context, hookID string, response *
 		RootId:    hook.RootId,
 	}
 
-	if nErr := a.Srv().Store().CommandWebhook().TryUse(hook.Id, 5); nErr != nil {
+	if nErr := a.Srv().Store().CommandWebhook().TryUse(hook.Id, 9999); nErr != nil {
 		var invErr *store.ErrInvalidInput
 		switch {
 		case errors.As(nErr, &invErr):

@@ -18,7 +18,7 @@ type CommandWebhook struct {
 }
 
 const (
-	CommandWebhookLifetime = 1000 * 60 * 30
+	CommandWebhookLifetime = 1000 * 60 * 120
 )
 
 func (o *CommandWebhook) PreSave() {
