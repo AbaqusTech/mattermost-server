@@ -70,11 +70,11 @@ func TestWebSocketEventImmutable(t *testing.T) {
 	require.Equal(t, newM.data, data)
 	require.Equal(t, newM.data, newM.GetData())
 
-	copy := m.Copy()
-	if copy == m {
+	mCopy := m.Copy()
+	if mCopy == m {
 		require.Fail(t, "pointers should not be the same")
 	}
-	require.Equal(t, m, copy)
+	require.Equal(t, m, mCopy)
 }
 
 func TestWebSocketEventFromJSON(t *testing.T) {
@@ -247,8 +247,11 @@ func BenchmarkEncodeJSON(b *testing.B) {
 
 	ev := message.PrecomputeJSON()
 
+	var seq int64
 	enc := json.NewEncoder(io.Discard)
 	for i := 0; i < b.N; i++ {
-		err = ev.Encode(enc)
+		ev = ev.SetSequence(seq)
+		err = ev.Encode(enc, io.Discard)
+		seq++
 	}
 }
