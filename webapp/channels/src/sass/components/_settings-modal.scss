@@ -1,55 +1,73 @@
-@charset "utf-8";
+@use "utils/functions";
 
 .app__body {
-    .settings-modal {
+    .settings-modal {  
         h3 {
             font-size: 18px;
         }
 
-        // Tabs
-        .nav-pills {
-            > li {
-                margin-bottom: 8px;
+        .modal-header {
+            border-bottom: 1px solid rgba(var(--center-channel-color-rgb), 0.08);
 
-                button {
-                    height: 32px;
-                    padding: 0 12px;
-                    border-radius: 4px;
-                    color: rgba(var(--center-channel-color-rgb), 0.75);
-                    font-weight: 600;
-
-                    &:hover {
-                        background-color: rgba(var(--center-channel-color-rgb), 0.04);
-                        border-radius: 4px;
-                        color: rgba(var(--center-channel-color-rgb), 0.88);
-                    }
-                }
-
-                &.active {
-                    button {
-                        background: rgba(var(--button-bg-rgb), 0.08);
-                        color: v(button-bg);
-                    }
-                }
+            &__title {
+                color: var(--center-channel-color);
+                font-family: 'Metropolis', serif;
+                font-size: 22px;
+                font-weight: 600;
+                line-height: 28px;
+                word-break: break-word;
             }
         }
 
-        .modal-content {
-            border: 1px solid rgba(var(--center-channel-color-rgb), 0.16);
-            background: var(--center-channel-bg);
-            border-radius: 12px;
+        // Tabs
+        .nav-pills {
+            &__tab {
+                display: flex;
+                width: 100%;
+                height: 32px;
+                align-items: center;
+                justify-content: start;
+                padding: 0 12px;
+                border-radius: 4px;
+                margin-bottom: 8px;
+                color: rgba(var(--center-channel-color-rgb), 0.75);
+                font-weight: 600;
+
+                i {
+                    color: rgba(var(--center-channel-color-rgb), 0.64);
+                }
+
+                &:hover {
+                    border-radius: 4px;
+                    background-color: rgba(var(--center-channel-color-rgb), 0.04);
+                    color: rgba(var(--center-channel-color-rgb), 0.8);
+                }
+
+                &.active {
+                    background: rgba(var(--button-bg-rgb), 0.08);
+                    color: functions.v(button-bg);
+
+                    i {
+                        color: functions.v(button-bg);
+                    }
+                }
+            }
+
+            & .header {
+                margin-bottom: 8px;
+                color: rgba(var(--center-channel-color-rgb), 0.75);
+                font-weight: 600;
+            }
         }
 
         .settings-table {
+            min-height: 475px;
+
             .settings-links {
                 width: 232px;
                 padding: 16px;
                 border-right: 1px solid rgba(var(--center-channel-color-rgb), 0.08);
                 background: rgba(var(--center-channel-color-rgb), 0.04);
-            }
-
-            .nav {
-                width: 200px;
             }
 
             .settings-content {
@@ -60,47 +78,6 @@
                 .divider-light {
                     border-color: rgba(var(--center-channel-color-rgb), 0.08);
                 }
-            }
-        }
-
-        .modal-header {
-            height: 76px;
-            align-items: center;
-            padding: 0 24px;
-            border-color: rgba(var(--center-channel-color-rgb), 0.08);
-            background: transparent;
-
-            .close {
-                top: 18px;
-                right: 18px;
-                width: 40px;
-                height: 40px;
-                border-radius: 4px;
-                color: rgba(var(--center-channel-color-rgb), 0.56);
-                font-size: 30px;
-                font-weight: 400;
-
-                &:hover {
-                    background: rgba(var(--center-channel-color-rgb), 0.08);
-                    color: rgba(var(--center-channel-color-rgb), 0.72);
-                }
-
-                &:active {
-                    background: rgba(var(--button-bg-rgb), 0.08);
-                    color: v(button-bg);
-                }
-
-                .modal-title {
-                    background: transparent;
-                    color: v(center-channel-color);
-                    font-size: 22px;
-                }
-            }
-
-            .modal-title {
-                background: transparent;
-                color: v(center-channel-color);
-                font-size: 22px;
             }
         }
     }

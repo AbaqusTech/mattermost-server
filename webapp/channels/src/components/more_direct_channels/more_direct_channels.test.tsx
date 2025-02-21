@@ -16,6 +16,7 @@ const mockedUser = TestHelper.getUserMock();
 
 describe('components/MoreDirectChannels', () => {
     const baseProps: ComponentProps<typeof MoreDirectChannels> = {
+        focusOriginElement: 'anyId',
         currentUserId: 'current_user_id',
         currentTeamId: 'team_id',
         currentTeamName: 'team_name',
@@ -54,8 +55,8 @@ describe('components/MoreDirectChannels', () => {
         onExited: jest.fn(),
         actions: {
             getProfiles: jest.fn(() => {
-                return new Promise<void>((resolve) => {
-                    process.nextTick(() => resolve());
+                return new Promise((resolve) => {
+                    process.nextTick(() => resolve({data: true}));
                 });
             }),
             getProfilesInTeam: jest.fn().mockResolvedValue({data: true}),
